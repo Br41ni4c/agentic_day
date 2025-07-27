@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from datetime import datetime
 import json
 import os
 import uuid
@@ -8,6 +10,31 @@ from googleapiclient.errors import HttpError
 from google.oauth2.service_account import Credentials
 from google.auth import jwt, crypt
 
+@dataclass
+class ReceiptData:
+    transactionId: str | None
+    vendorName: str = "Local vendor"
+    purchaseDate: datetime = datetime.now().strftime('%Y-%m-%d')
+    totalAmount: float = 0.0
+    paymentMethod: str = "UPI"
+    itemsSummary: str = ""
+
+def makeReceiptData(
+    transactionId: str = None,
+    vendorName: str = "Local vendor",
+    purchaseDate: datetime = datetime.now().strftime("%Y-%m-%d"),
+    totalAmount: float = 0.0,
+    paymentMethod: str = "UPI",
+    itemsSummary: str = ""
+):
+    return ReceiptData(
+        transactionId=transactionId,
+        vendorName=vendorName,
+        purchaseDate=purchaseDate,
+        totalAmount=totalAmount,
+        paymentMethod=paymentMethod,
+        itemsSummary=itemsSummary
+    )
 
 class WalletPassGenerator:
     """
@@ -132,6 +159,7 @@ class WalletPassGenerator:
                     'mainImage': {
                         'sourceUri': {
                             'uri': 'https://storage.googleapis.com/wallet-lab-tools-codelab-artifacts-public/google-io-2021-card.png',
+                        },
                         'contentDescription': {
                             'defaultValue': {
                                 'language': 'en-US',
@@ -140,7 +168,6 @@ class WalletPassGenerator:
                         }
                     },
                     'id': 'vendor_logo_header'
-                }
                 }
             ],
             'textModulesData': [
@@ -184,24 +211,23 @@ class WalletPassGenerator:
                 raise
 
         return full_class_id
+ 
 
-    def create_receipt_pass_link(self, class_id: str, receipt_data: dict) -> str:
+    def create_receipt_pass_link(self, class_id: str, receipt_data: ReceiptData) -> str:
         """
         Creates a new generic object for a vegetable vendor receipt and generates
         an "Add to Google Wallet" link for it.
 
         Args:
             class_id (str): The ID of the generic class this object belongs to.
-            receipt_data (dict): A dictionary containing receipt details, e.g.,
-                                 'transactionId', 'vendorName', 'purchaseDate',
-                                 'totalAmount', 'paymentMethod', 'itemsSummary'.
+            receipt_data (ReceiptData)
 
         Returns:
             str: An "Add to Google Wallet" URL.
         """
         # Generate a unique object ID for this receipt
         # Use transactionId from input, fall back to a UUID if not provided
-        transaction_id = receipt_data.get('transactionId', f'TXN_{uuid.uuid4()}')
+        transaction_id = receipt_data.transactionId
         object_suffix = f'receipt_{transaction_id}'
         full_object_id = f'{self.issuer_id}.{object_suffix}'
 
@@ -225,13 +251,13 @@ class WalletPassGenerator:
             'subheader': {
                 'defaultValue': {
                     'language': 'en',
-                    'value': receipt_data.get('vendorName', 'Local Vegetable Vendor')
+                    'value': receipt_data.vendorName
                 }
             },
             'header': {
                 'defaultValue': {
                     'language': 'en',
-                    'value': f"Total: ₹ {receipt_data.get('totalAmount', '0.00')}"
+                    'value': f"Total: ₹ {receipt_data.totalAmount}"
                 }
             },
             'barcode': {
@@ -246,34 +272,34 @@ class WalletPassGenerator:
                 'contentDescription': {
                     'defaultValue': {
                         'language': 'en-US',
-                        'value': 'Fresh Vegetables Banner'
+                        'value': receipt_data.vendorName
                     }
                 }
             },
             'textModulesData': [
                 {
                     'header': 'VENDOR',
-                    'body': receipt_data.get('vendorName', 'N/A'),
+                    'body': receipt_data.vendorName,
                     'id': 'vendor_name'
                 },
                 {
                     'header': 'DATE',
-                    'body': receipt_data.get('purchaseDate', datetime.now().strftime('%Y-%m-%d')),
+                    'body': receipt_data.purchaseDate,
                     'id': 'purchase_date'
                 },
                 {
                     'header': 'TOTAL',
-                    'body': f"₹ {receipt_data.get('totalAmount', '0.00')}",
+                    'body': f"₹ {receipt_data.totalAmount}",
                     'id': 'total_amount'
                 },
                 {
                     'header': 'PAYMENT',
-                    'body': receipt_data.get('paymentMethod', 'N/A'),
+                    'body': receipt_data.paymentMethod,
                     'id': 'payment_method'
                 },
                 {
                     'header': 'ITEMS',
-                    'body': receipt_data.get('itemsSummary', 'No items listed'),
+                    'body': receipt_data.itemsSummary,
                     'id': 'items_summary'
                 },
                 {
@@ -336,14 +362,10 @@ class WalletPassGenerator:
         return save_url
 
 
+YOUR_ISSUER_ID = '3388000000022973951' 
+CLASS_SUFFIX_RECEIPT = 'custom_invoice_v1'
 # --- Example Usage ---
-if __name__ == '__main__':
-    # TODO: Replace with your actual Issuer ID
-    YOUR_ISSUER_ID = '3388000000022973951' # Example Issuer ID. Get yours from Google Wallet API Console
-
-    # Define a suffix for your class
-    CLASS_SUFFIX_RECEIPT = 'vegetable_receipt_class_v1'
-
+def main(receiptData: ReceiptData):
     try:
         wallet_generator = WalletPassGenerator(YOUR_ISSUER_ID)
 
@@ -351,18 +373,18 @@ if __name__ == '__main__':
         receipt_class_id = wallet_generator.create_or_get_class(CLASS_SUFFIX_RECEIPT)
         print(f"\nUsing Pass Class ID: {receipt_class_id}")
 
-        # 2. Prepare sample receipt data
-        sample_receipt_data = {
-            'transactionId': f"TXN_{datetime.now().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex[:6]}",
-            'vendorName': 'Fresh Greens Market',
-            'purchaseDate': datetime.now().strftime('%Y-%m-%d'),
-            'totalAmount': '125.50',
-            'paymentMethod': 'UPI',
-            'itemsSummary': 'Tomatoes (1kg), Spinach (500g), Onions (2kg), Coriander (1 bunch)'
-        }
+        # # 2. Prepare sample receipt data
+        # sample_receipt_data = {
+        #     'transactionId': f"TXN_{datetime.now().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex[:6]}",
+        #     'vendorName': 'Fresh Greens Market',
+        #     'purchaseDate': datetime.now().strftime('%Y-%m-%d'),
+        #     'totalAmount': '125.50',
+        #     'paymentMethod': 'UPI',
+        #     'itemsSummary': 'Tomatoes (1kg), Spinach (500g), Onions (2kg), Coriander (1 bunch)'
+        # }
 
         # 3. Create the pass object and get the "Add to Google Wallet" link
-        save_link = wallet_generator.create_receipt_pass_link(receipt_class_id, sample_receipt_data)
+        save_link = wallet_generator.create_receipt_pass_link(receipt_class_id, receiptData)
 
         print("\n--- Success! ---")
         print("Copy and paste this link into your browser to add the pass to your Google Wallet:")
@@ -381,3 +403,6 @@ if __name__ == '__main__':
         print("Full error response:", e.content.decode('utf-8'))
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
+if __name__ == '__main__':
+    main()

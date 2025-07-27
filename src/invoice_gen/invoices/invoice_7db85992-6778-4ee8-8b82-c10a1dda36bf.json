@@ -1,0 +1,21 @@
+{
+    "id": "7db85992-6778-4ee8-8b82-c10a1dda36bf",
+    "issuer_name": "Rathish",
+    "store_name": "Rathish's general store",
+    "store_address": "vivekananda street, Dubai cross street, Dubai",
+    "issuer_id": "123456",
+    "items": [
+        {
+            "name": "bicycle",
+            "cost": 7000.0
+        }
+    ],
+    "cgst": 7.0,
+    "sgst": 7.0,
+    "gross_amount": 7980.000000000001,
+    "timestamp": "2025-07-27T06:23:56.165884",
+    "geo_coordinates": {
+        "latitude": 37.7749,
+        "longitude": -122.4194
+    }
+}

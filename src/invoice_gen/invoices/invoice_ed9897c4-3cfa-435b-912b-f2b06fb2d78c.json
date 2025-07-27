@@ -1,0 +1,21 @@
+{
+    "id": "ed9897c4-3cfa-435b-912b-f2b06fb2d78c",
+    "issuer_name": "acddc",
+    "store_name": "Rathish's general store",
+    "store_address": "vivekananda street, Dubai cross street, Dubai",
+    "issuer_id": "123456",
+    "items": [
+        {
+            "name": "acd",
+            "cost": 3.0
+        }
+    ],
+    "cgst": 0.0,
+    "sgst": 0.0,
+    "gross_amount": 3.0,
+    "timestamp": "2025-07-27T07:20:06.844071",
+    "geo_coordinates": {
+        "latitude": 37.7749,
+        "longitude": -122.4194
+    }
+}

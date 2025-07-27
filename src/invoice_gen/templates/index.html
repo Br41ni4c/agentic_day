@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="bg-primary text-white py-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <h1 class="display-4 mb-0">Invoice Generator</h1>
+            <a href="/settings" class="btn btn-info">Settings</a>
+        </div>
+    </div>
+    <div class="container mt-5">
+        <hr>
+        <div>
+            <h2>{{ store_name }}</h2>
+            <p>{{ store_address }}</p>
+        </div>
+        <hr>
+        <form action="/generate_invoice" method="post">
+            <div class="form-group">
+                <label for="issuer_name">Issuer Name</label>
+                <input type="text" class="form-control" id="issuer_name" name="issuer_name" required>
+            </div>
+            <div id="items-container">
+                <div class="form-row">
+                    <div class="form-group col-md-5">
+                        <label>Item Name</label>
+                        <input type="text" class="form-control" name="item_name[]" required>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label>Cost</label>
+                        <input type="number" class="form-control" name="item_cost[]" step="0.01" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn btn-danger btn-block" onclick="deleteItem(this)">Delete</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="addItem()">Add Item</button>
+            <div class="form-group mt-3">
+                <label for="gst">GST (%)</label>
+                <input type="number" class="form-control" id="gst" name="gst" step="0.01" value="0">
+            </div>
+            <button type="submit" class="btn btn-primary">Generate Invoice</button>
+        </form>
+    </div>
+
+    <script>
+        function addItem() {
+            const itemsContainer = document.getElementById('items-container');
+            const itemRow = document.createElement('div');
+            itemRow.classList.add('form-row');
+            itemRow.innerHTML = `
+                <div class="form-group col-md-5">
+                    <label>Item Name</label>
+                    <input type="text" class="form-control" name="item_name[]" required>
+                </div>
+                <div class="form-group col-md-3">
+                    <label>Cost</label>
+                    <input type="number" class="form-control" name="item_cost[]" step="0.01" required>
+                </div>
+                <div class="form-group col-md-2">
+                    <label>&nbsp;</label>
+                    <button type="button" class="btn btn-danger btn-block" onclick="deleteItem(this)">Delete</button>
+                </div>
+            `;
+            itemsContainer.appendChild(itemRow);
+        }
+
+        function deleteItem(button) {
+            const itemsContainer = document.getElementById('items-container');
+            if (itemsContainer.children.length > 1) {
+                button.closest('.form-row').remove();
+            } else {
+                alert("Invoice must have at least one item.");
+            }
+        }
+    </script>
+</body>
+</html>
