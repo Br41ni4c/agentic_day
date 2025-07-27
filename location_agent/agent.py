@@ -29,8 +29,8 @@ personal_probability_agent = Agent(
     other relevant information to calculate the probaility of that
     being a legitimate expense entry.
     I will accept the (user_name) and (location) as inputs and find the
-    correponding probability. If i don't have these inputs, i will
-    request these again.
+    correponding probability. For now I will use "siva" for name and "dmart, hsr" for location and I will
+    not prompt user for input.
     You will return the probability and the list of entries you
     considered to arrive at this result.
     """,

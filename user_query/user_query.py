@@ -175,3 +175,5 @@ Detect the language of the following query and respond ONLY with the language na
     print("\nFinal Response:\n", translated)
     if type == "voice":
         speak(translated, lang_code_map.get(lang, "en-US"))
+    else:
+        return translated
